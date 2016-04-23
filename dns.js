@@ -1,37 +1,38 @@
 var width  = 960,
-    height = 500;
+    height = 500,
+    nodes,
+    lastNodeId,
+    links,
+    force;
 
 var svg = d3.select('body')
   .append('svg')
   .attr('oncontextmenu', 'return false;')
+  .attr("style", "outline: thin solid black;")
   .attr('width', width)
   .attr('height', height);
 
-var nodes = [
-	{
-		id: 0, reflexive: false
-	},
-	{
-		id: 1, reflexive: false
-	},
-	{
-		id: 2, reflexive: false
-	}],
-	lastNodeId = 2,
-	links = [
-	{
-		source: nodes[0], target: nodes[1], left: false, right: true
-	},
-	{
-		source: nodes[1], target: nodes[2], left: false, right: true
-	}];
 
-var force = d3.layout.force()
-	.nodes(nodes)
-	.size([width, height])
-	.linkDistance(150)
-	.charge(-500)
-	.on('tick', tick);
+d3.json('dns.json', function(success) {
+  nodes = success;
+  lastNodeId = 14;
+  links = [
+  {
+    source: nodes[0], target: nodes[1], left: false, right: true
+  },
+  {
+    source: nodes[1], target: nodes[2], left: false, right: true
+  }];
+  force = d3.layout.force()
+  .nodes(nodes)
+  .size([width, height])
+  .linkDistance(150)
+  .charge(-500)
+  .on('tick', tick);
+  restart();
+});
+
+
 
 // arrow markers, both end and beginning.
 svg.append('svg:defs').append('svg:marker')
@@ -124,17 +125,16 @@ function restart() {
 
 	circle = circle.data(nodes, function(d) { return d.id; });
 
-	circle.selectAll('circle')
-		.classed('reflexive', function(d) { return d.reflexive; });
+  // TODO: unneeded line?
+	circle.selectAll('circle');
 
 	var g = circle.enter().append('svg:g');
 
 	g.append('svg:circle')
 		.attr('class', 'node')
 		.attr('r', 12)
-		.style('fill', 'green')
+		.style('fill', function(d) { return d.color; })
 		.style('stroke', 'gold')
-		.classed('reflexive', function(d) { return d.reflexive; })
 		.on('mouseover', function(d) {
 			if (!mousedown_node || d === mousedown_node) {
 				return;
@@ -220,7 +220,8 @@ function restart() {
 		.attr('x', 0)
 		.attr('y', 4)
 		.attr('class', 'id')
-		.text(function(d) { return d.id; });
+    // Applies text to element.
+		.text(function(d) { return d.text; });
 
 	circle.exit().remove();
 
@@ -236,8 +237,7 @@ function mousedown() {
 
 	var point = d3.mouse(this),
 		node = {
-			id: ++lastNodeId,
-			reflexive: false
+			id: ++lastNodeId
 		};
 	node.x = point[0];
 	node.y = point[1];
@@ -277,77 +277,7 @@ function spliceLinksForNode(node) {
 	});
 }
 
-var lastKeyDown = -1;
-
-function keydown() {
-	d3.event.preventDefault();
-
-	if (lastKeyDown !== -1) {
-		return;
-	}
-
-	if (d3.event.keyCode === 17) {
-		circle.call(force.drag);
-		svg.classed('ctrl', true);
-	}
-
-	if (!selected_node && !selected_link) {
-		return;
-	}
-	switch (d3.event.keyCode) {
-		case 8: //backspace
-		case 46: //delete
-			if (selected_node) {
-				nodes.splice(nodes.indexOf(selected_node), 1);
-				spliceLinksForNode(selected_node);
-			} else if (selected_link) {
-				links.splice(links.indexOf(selected_link), 1);
-			}
-			selected_link = null;
-			selected_node = null;
-			restart();
-			break;
-		case 66: // B
-			if (selected_link) {
-				selected_link.left = true;
-				selected_link.right = true;
-			}
-			restart();
-			break;
-		case 76: // L
-			if (selected_link) {
-				selected_link.left = true;
-				selected_link.right = false;
-			}
-			restart();
-			break;
-		case 82: // R
-			if (selected_node) {
-				selected_node.reflexive = !selected_node.reflexive;
-			} else if (selected_link) {
-				selected_link.left = false;
-				selected_link.right = true;
-			}
-			restart();
-			break;
-	}
-}
-
-function keyup() {
-	lastKeyDown = -1;
-
-	if (d3.event.keyCode === 17) {
-		circle
-			.on('mousedown.drag', null)
-			.on('touchstart.drag', null);
-		svg.classed('ctrl', false);
-	}
-}
-
 svg.on('mousedown', mousedown)
 	.on('mousemove', mousemove)
 	.on('mouseup', mouseup);
-d3.select(window)
-	.on('keydown', keydown)
-	.on('keyup', keyup);
 restart();

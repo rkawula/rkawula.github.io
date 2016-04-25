@@ -217,8 +217,8 @@ function restart() {
 		});
 
 	g.append('svg:text')
-		.attr('x', 0)
-		.attr('y', 4)
+		.attr('x', -20)
+		.attr('y', -25)
 		.attr('class', 'id')
     // Applies text to element.
 		.text(function(d) { return d.text; });
@@ -241,6 +241,7 @@ function mousedown() {
 		};
 	node.x = point[0];
 	node.y = point[1];
+  node.text = 'New authoritative nameserver';
 	nodes.push(node);
 
 	restart();

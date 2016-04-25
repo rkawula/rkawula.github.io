@@ -24,11 +24,11 @@ d3.json('dns.json', function(success) {
     source: nodes[1], target: nodes[2], left: false, right: true
   }];
   force = d3.layout.force()
-  .nodes(nodes)
-  .size([width, height])
-  .linkDistance(150)
-  .charge(-500)
-  .on('tick', tick);
+    .nodes(nodes)
+    .size([width, height])
+    .linkDistance(150)
+    .charge(-500)
+    .on('tick', tick);
   restart();
 });
 
@@ -36,12 +36,12 @@ d3.json('dns.json', function(success) {
 
 // arrow markers, both end and beginning.
 svg.append('svg:defs').append('svg:marker')
-	.attr('id', 'end-arrow')
-	.attr('viewBox', '0 -5 10 10')
-	.attr('refX', 6)
-	.attr('markerWidth', 3)
-	.attr('markerHeight', 3)
-	.attr('orient', 'auto')
+  	.attr('id', 'end-arrow')
+  	.attr('viewBox', '0 -5 10 10')
+  	.attr('refX', 6)
+  	.attr('markerWidth', 3)
+  	.attr('markerHeight', 3)
+  	.attr('orient', 'auto')
   .append('svg:path')
   	.attr('d', 'M10, -5L0,0L10,5')
   	.attr('fill', '#000')
@@ -281,4 +281,3 @@ function spliceLinksForNode(node) {
 svg.on('mousedown', mousedown)
 	.on('mousemove', mousemove)
 	.on('mouseup', mouseup);
-restart();

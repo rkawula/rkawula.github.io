@@ -1,5 +1,7 @@
 [{
-  "id": 0, "text": "Client DNS resolver", "color": "#ce31c2"
+  "id": 0,
+  "text": "Local subnet",
+  "color": "#ce31c2"
 },
 {
   "id": 1, "text": "Local DNS cache", "color": "#3366ff"

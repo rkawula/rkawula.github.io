@@ -275,7 +275,7 @@ function spliceLinksForNode(node) {
 	toSplice.map(function(l) {
 		links.splice(links.indexOf(l), 1);
 	});
-}
+};
 
 svg.on('mousedown', mousedown)
 	.on('mousemove', mousemove)

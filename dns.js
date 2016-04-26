@@ -44,7 +44,7 @@ svg.append('svg:defs').append('svg:marker')
   	.attr('markerHeight', 3)
   	.attr('orient', 'auto')
   .append('svg:path')
-  	.attr('d', 'M10, -5L0,0L10,5')
+  	.attr('d', 'M0,-5L10,0L0,5')
   	.attr('fill', '#000');
 
 svg.append('svg:defs').append('svg:marker')
@@ -66,7 +66,6 @@ var path = svg.append('svg:g').selectAll('path'),
 	circle = svg.append('svg:g').selectAll('g');
 
 var selected_node = null,
-	selected_link = null,
 	mousedown_link = null,
 	mousedown_node = null,
 	mouseup_node = null;
@@ -101,28 +100,14 @@ function tick() {
 function restart() {
 	path = path.data(links);
 
-	path.classed('selected', function(d) { return d === selected_link; })
+	path
 		.style('marker-start', function(d) { return d.left ? 'url(#start-arrow)' : ''; })
 		.style('marker-end', function(d) { return d.right ? 'url(#end-arrow)' : ''; });
 		
 	path.enter().append('svg:path')
 		.attr('class', 'link')
-		.classed('selected', function(d) { return d === selected_link; })
 		.style('marker-start', function(d) { return d.left ? 'url(#start-arrow)' : ''; })
-		.style('marker-end', function(d) { return d.right ? 'url(#end-arrow)' : ''; })
-		// When any of the edges are clicked:
-    .on('mousedown', function(d) {
-			if (d3.event.ctrlKey) return;
-
-			mousedown_link = d;
-			if (mousedown_link === selected_link) {
-				selected_link = null;
-			} else {
-				selected_link = mousedown_link;
-			}
-			selected_node = null;
-			restart();
-		});
+		.style('marker-end', function(d) { return d.right ? 'url(#end-arrow)' : ''; });
 
 	path.exit().remove();
 
@@ -157,7 +142,6 @@ function restart() {
 				selected_node = mousedown_node;
         console.log('Selecting ' + d.text);
 			}
-      selected_link = null;
 			drag_line.style('marker-end', 'url(#end-arrow)')
 			.classed('hidden', false)
 			.attr('d', 'M' + mousedown_node.x + ',' + mousedown_node.y
@@ -207,7 +191,6 @@ function restart() {
 				links.push(link);
 			}
 
-			selected_link = link;
 			selected_node = null;
 			restart();
 		});
@@ -257,8 +240,9 @@ function mousemove() {
 
 function mouseup() {
 	if (mousedown_node) {
-		drag_line.classed('hidden', true)
-		.style('marker-end', '');
+		drag_line
+      .classed('hidden', true)
+		  .style('marker-end', '');
 	}
 
 	svg.classed('active', false);

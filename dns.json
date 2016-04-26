@@ -1,38 +1,72 @@
 [{
   "id": 0,
   "text": "Local subnet",
-  "color": "#ce31c2"
+  "color": "#ce31c2",
+  "type": "local"
 },
 {
-  "id": 1, "text": "Local DNS cache", "color": "#3366ff"
+  "id": 1,
+  "text": "Local DNS cache",
+  "color": "#3366ff",
+  "type": "local"
 },
 {
-  "id": 2, "text": ". nameserver", "color": "#ffd633"
+  "id": 2,
+  "text": ". nameserver",
+  "color": "#ffd633",
+  "type": "root"
 },
 {
-  "id": 3, "text": "com. nameserver", "color": "#00ff00"
+  "id": 3,
+  "text": "com. nameserver",
+  "color": "#00ff00",
+	"type": "top-level"
 },
 {
-  "id": 4, "text": "org. nameserver", "color": "#00ff00"
+  "id": 4,
+  "text": "org. nameserver",
+  "color": "#00ff00",
+	"type": "top-level"
 },
 {
-  "id": 5, "text": "net. nameserver", "color": "#00ff00"
+  "id": 5,
+  "text": "net. nameserver",
+  "color": "#00ff00",
+	"type": "top-level"
 },
 {
-  "id": 6, "text": "edu. nameserver", "color": "#00ff00"
+  "id": 6,
+  "text": "edu. nameserver",
+  "color": "#00ff00",
+	"type": "top-level"
 },
 {
-  "id": 7, "text": "gov. nameserver", "color": "#00ff00"
+  "id": 7,
+  "text": "gov. nameserver",
+  "color": "#00ff00",
+	"type": "top-level"
 },
 {
-  "id": 8, "text": "ly. nameserver", "color": "#00ff00"
+  "id": 8,
+  "text": "ly. nameserver",
+  "color": "#00ff00",
+	"type": "top-level"
 },
 {
-  "id": 9, "text": "tv. nameserver", "color": "#00ff00"
+  "id": 9,
+  "text": "tv. nameserver",
+  "color": "#00ff00",
+	"type": "top-level"
 },
 {
-  "id": 10, "text": "cn. nameserver", "color": "#00ff00"
+  "id": 10,
+  "text": "cn. nameserver",
+  "color": "#00ff00",
+	"type": "top-level"
 },
 {
-  "id": 11, "text": "me. nameserver", "color": "#00ff00"
+  "id": 11,
+  "text": "me. nameserver",
+  "color": "#00ff00",
+	"type": "top-level"
 }]

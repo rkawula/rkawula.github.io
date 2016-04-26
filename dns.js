@@ -44,7 +44,8 @@ svg.append('svg:defs').append('svg:marker')
   	.attr('orient', 'auto')
   .append('svg:path')
   	.attr('d', 'M10, -5L0,0L10,5')
-  	.attr('fill', '#000')
+  	.attr('fill', '#000');
+
 svg.append('svg:defs').append('svg:marker')
     .attr('id', 'start-arrow')
     .attr('viewBox', '0 -5 10 10')
@@ -108,7 +109,8 @@ function restart() {
 		.classed('selected', function(d) { return d === selected_link; })
 		.style('marker-start', function(d) { return d.left ? 'url(#start-arrow)' : ''; })
 		.style('marker-end', function(d) { return d.right ? 'url(#end-arrow)' : ''; })
-		.on('mousedown', function(d) {
+		// When any of the edges are clicked:
+    .on('mousedown', function(d) {
 			if (d3.event.ctrlKey) return;
 
 			mousedown_link = d;
@@ -126,13 +128,19 @@ function restart() {
 	circle = circle.data(nodes, function(d) { return d.id; });
 
   // TODO: unneeded line?
-	circle.selectAll('circle');
+	// circle.selectAll('circle');
 
 	var g = circle.enter().append('svg:g');
 
 	g.append('svg:circle')
 		.attr('class', 'node')
-		.attr('r', 12)
+    // Nameserver size determined by text.
+		.attr('r', function(d) {
+      if (d.type === 'root' || d.type === 'local') {
+        return 18;
+      }
+      return 12;
+    })
 		.style('fill', function(d) { return d.color; })
 		.style('stroke', 'gold')
 		.on('mouseover', function(d) {
@@ -276,7 +284,7 @@ function spliceLinksForNode(node) {
 	toSplice.map(function(l) {
 		links.splice(links.indexOf(l), 1);
 	});
-};
+}
 
 svg.on('mousedown', mousedown)
 	.on('mousemove', mousemove)

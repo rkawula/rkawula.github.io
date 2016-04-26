@@ -89,7 +89,7 @@ function tick() {
 			sourceY = d.source.y + (sourcePadding * normY),
 			targetX = d.target.x - (targetPadding * normX),
 			targetY = d.target.y - (targetPadding * normY);
-		return 'M' + sourceX + ',', + sourceY + 'L' + targetX + ',' + targetY;
+		return 'M' + sourceX + ',' + sourceY + 'L' + targetX + ',' + targetY;
 	});
 
 	circle.attr('transform', function(d) {

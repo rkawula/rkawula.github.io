@@ -107,9 +107,6 @@ function restart() {
 
 	circle = circle.data(nodes, function(d) { return d.id; });
 
-  // TODO: unneeded line?
-	// circle.selectAll('circle');
-
 	var g = circle.enter().append('svg:g');
 
 	g.append('svg:circle')
@@ -121,72 +118,15 @@ function restart() {
       }
       return 12;
     })
-		.style('fill', function(d) { return d.
-      color; })
+		.style('fill', function(d) { return d.color; })
 		.style('stroke', 'black')
     // Mouse interactions for individual nodes defined here.
+    // Start drawing an arrow when clicked.
 		.on('mousedown', function(d) {
-      // Select current node.
-			mousedown_node = d;
-      // Deselect if was already selected.
-			if (mousedown_node === selected_node) {
-				selected_node = null;
-        console.log('Deselecting ' + d.text);
-			} else {
-				selected_node = mousedown_node;
-        console.log('Selecting ' + d.text);
-			}
-			drag_line.style('marker-end', 'url(#end-arrow)')
-			.classed('hidden', false)
-			.attr('d', 'M' + mousedown_node.x + ',' + mousedown_node.y
-				+ 'L' + mousedown_node.x + ',' + mousedown_node.y);
-
-			restart();
-		})
+      beginDrawingLink(d);
+    })
 		.on('mouseup', function(d) {
-			if (!mousedown_node) {
-				return;
-			}
-
-			drag_line.classed('hidden', true)
-				.style('marker-end', '');
-
-			mouseup_node = d;
-			if (mouseup_node === mousedown_node) {
-				resetMouseVars();
-				return;
-			}
-
-      // Add arrows since you dragged to a new node.
-			var source, target, direction;
-
-			source = mousedown_node;
-			target = mouseup_node;
-			direction = 'right';
-
-			var link;
-
-			link = links.filter(function(l) {
-        console.log("Filtering links.");
-				return (l.source === source && l.target === target);
-			})[0];
-
-      // For testing: was "if (link)"
-			if (false) {
-				link[direction] = true;
-			} else {
-				link = {
-					source: source,
-					target: target,
-					left: false,
-					right: false
-				};
-				link[direction] = true;
-				links.push(link);
-			}
-
-			selected_node = null;
-			restart();
+			finishDrawingLink(d);
 		});
 
 	g.append('svg:text')
@@ -244,14 +184,65 @@ function mouseup() {
 	resetMouseVars();
 }
 
-function spliceLinksForNode(node) {
-	var toSplice = links.filter(function(l) {
-		return (l.source === node || l.target === node);
-	});
+function finishDrawingLink(d) {
+  if (!mousedown_node) {
+    return;
+  }
 
-	toSplice.map(function(l) {
-		links.splice(links.indexOf(l), 1);
-	});
+  drag_line.classed('hidden', true)
+    .style('marker-end', '');
+
+  mouseup_node = d;
+  if (mouseup_node === mousedown_node) {
+    resetMouseVars();
+    return;
+  }
+
+  // Add arrows since you dragged to a new node.
+  var source, target, direction;
+
+  source = mousedown_node;
+  target = mouseup_node;
+  direction = 'right';
+
+  var link;
+
+  link = links.filter(function(l) {
+    return (l.source === source && l.target === target);
+  })[0];
+
+  if (link) {
+    link[direction] = true;
+  } else {
+    link = {
+      source: source,
+      target: target,
+      left: false,
+      right: false
+    };
+    link[direction] = true;
+    links.push(link);
+  }
+
+  selected_node = null;
+  restart();
+}
+
+function beginDrawingLink(d) {
+  // Select current node.
+  mousedown_node = d;
+  // Deselect if was already selected.
+  if (mousedown_node === selected_node) {
+    selected_node = null;
+  } else {
+    selected_node = mousedown_node;
+  }
+  drag_line.style('marker-end', 'url(#end-arrow)')
+  .classed('hidden', false)
+  .attr('d', 'M' + mousedown_node.x + ',' + mousedown_node.y
+    + 'L' + mousedown_node.x + ',' + mousedown_node.y);
+
+  restart();
 }
 
 svg.on('mousedown', mousedown)

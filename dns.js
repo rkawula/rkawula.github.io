@@ -16,13 +16,7 @@ var svg = d3.select('body')
 d3.json('dns.json', function(success) {
   nodes = success;
   lastNodeId = 14;
-  links = [
-  {
-    source: nodes[0], target: nodes[1], left: false, right: true
-  },
-  {
-    source: nodes[1], target: nodes[2], left: false, right: true
-  }];
+  links = [];
   force = d3.layout.force()
     .nodes(nodes)
     .links(links)

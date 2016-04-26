@@ -25,6 +25,7 @@ d3.json('dns.json', function(success) {
   }];
   force = d3.layout.force()
     .nodes(nodes)
+    .links(links)
     .size([width, height])
     .linkDistance(150)
     .charge(-500)
@@ -141,30 +142,22 @@ function restart() {
       }
       return 12;
     })
-		.style('fill', function(d) { return d.color; })
-		.style('stroke', 'gold')
-		.on('mouseover', function(d) {
-			if (!mousedown_node || d === mousedown_node) {
-				return;
-			}
-			d3.select(this).attr('transform', 'scale(1.1)');
-		})
-		.on('mouseout', function(d) {
-			if (!mousedown_node || d === mousedown_node) {
-				return;
-			}
-			d3.select(this).attr('transform', '');
-		})
+		.style('fill', function(d) { return d.
+      color; })
+		.style('stroke', 'black')
+    // Mouse interactions for individual nodes defined here.
 		.on('mousedown', function(d) {
-			if (d3.event.ctrlKey) {
-				return;
-			}
+      // Select current node.
 			mousedown_node = d;
+      // Deselect if was already selected.
 			if (mousedown_node === selected_node) {
 				selected_node = null;
+        console.log('Deselecting ' + d.text);
 			} else {
 				selected_node = mousedown_node;
+        console.log('Selecting ' + d.text);
 			}
+      selected_link = null;
 			drag_line.style('marker-end', 'url(#end-arrow)')
 			.classed('hidden', false)
 			.attr('d', 'M' + mousedown_node.x + ',' + mousedown_node.y
@@ -186,27 +179,22 @@ function restart() {
 				return;
 			}
 
-			d3.select(this).attr('transform', '');
-
+      // Add arrows since you dragged to a new node.
 			var source, target, direction;
 
-			if (mousedown_node.id < mouseup_node.id) {
-				source = mousedown_node;
-				target = mouseup_node;
-				direction = 'right';
-			} else {
-				source = mouseup_node;
-				target = mousedown_node;
-				direction = 'left';
-			}
+			source = mousedown_node;
+			target = mouseup_node;
+			direction = 'right';
 
 			var link;
 
 			link = links.filter(function(l) {
+        console.log("Filtering links.");
 				return (l.source === source && l.target === target);
 			})[0];
 
-			if (link) {
+      // For testing: was "if (link)"
+			if (false) {
 				link[direction] = true;
 			} else {
 				link = {
@@ -231,6 +219,7 @@ function restart() {
     // Applies text to element.
 		.text(function(d) { return d.text; });
 
+  // Remove old nodes.
 	circle.exit().remove();
 
 	force.start();
@@ -239,10 +228,11 @@ function restart() {
 function mousedown() {
 	svg.classed('active', true);
 
-	if (d3.event.ctrlKey || mousedown_node || mousedown_link) {
+	if (mousedown_node || mousedown_link) {
 		return;
 	}
 
+  // New node here.
 	var point = d3.mouse(this),
 		node = {
 			id: ++lastNodeId

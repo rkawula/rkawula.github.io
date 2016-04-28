@@ -176,25 +176,6 @@ function makeNewDns(name) {
   restart();
 }
 
-function makeNewDnsOnClick() {
-	svg.classed('active', true);
-
-	if (mousedown_node || mousedown_link) {
-		return;
-	}
-
-  // New node here.
-	var point = d3.mouse(this),
-		node = {
-			id: ++lastNodeId
-		};
-	node.x = point[0];
-	node.y = point[1];
-  node.text = 'New authoritative nameserver';
-	nodes.push(node);
-
-	restart();
-}
 
 function mousemove() {
 	if (!mousedown_node) {
@@ -283,7 +264,7 @@ function resolveDns() {
   var url = document.getElementById('query').value
   url = url.trim().replace("www.", "");
   makeNameServers(url);
-  animateQuery(url);
+  //animateQuery(url);
 }
 
 function makeNameServers(url) {
@@ -293,6 +274,33 @@ function makeNameServers(url) {
     nameServer = servers[i] + "." + nameServer;
       makeNewDns(nameServer);
   }
+}
+
+function connectNodes(sourceId, targetId) {
+  // Find the node that has this id.
+  // Note: using == rather than === to 
+  // allow 1 == "1"
+  var source = nodes.filter(function(n) {
+    return n.id == sourceId;
+  })[0];
+
+  var target = nodes.filter(function(n) {
+    return n.id == targetId;
+  })[0];
+
+  var link = {
+      source: source,
+      target: target,
+      left: false,
+      right: true
+    };
+  links.push(link);
+  restart();
+}
+
+function connectNodesTest() {
+  var ids = document.getElementById('newLink').value.split(", ");
+  connectNodes(ids[0], ids[1]);
 }
 
 svg

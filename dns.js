@@ -19,7 +19,8 @@ var width  = 960,
       type: "root"
     }],
     lastNodeId = 2,
-    links = [ { source: 0, target: 1, left: false, right: true}];
+    links = [ { source: 0, target: 1, left: false, right: true}],
+    cache = [];
 
 var svg = d3.select('body')
   .append('svg')
@@ -271,7 +272,6 @@ function resolveDns() {
   url = url.trim().replace("www.", "");
   url = "ns" + (Math.floor(Math.random() * 4) + 1).toString() + "." + url;
   makeNameServers(url);
-  //animateQuery(url);
 }
 
 function makeNameServers(url) {
@@ -284,6 +284,7 @@ function makeNameServers(url) {
     } else {
       makeNewDns(nameServer);
     }
+    connectNodes(1, lastNodeId);
   }
 }
 

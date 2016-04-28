@@ -142,7 +142,32 @@ function restart() {
 	force.start();
 }
 
-function mousedown() {
+function makeNewDns(name) {
+  svg.classed('active', true);
+
+  if (mousedown_node || mousedown_link) {
+    return;
+  }
+  for (var i in nodes) {
+    if (nodes[i].text === name) {
+      return;
+    }
+  }
+  // New node here.
+  var node = {
+      id: ++lastNodeId
+    };
+  node.x = width / 2;
+  node.y = height / 2;
+  node.text = name;
+  node.type = "authoritative";
+  node.color = "green"
+  nodes.push(node);
+
+  restart();
+}
+
+function makeNewDnsOnClick() {
 	svg.classed('active', true);
 
 	if (mousedown_node || mousedown_link) {
@@ -245,6 +270,19 @@ function beginDrawingLink(d) {
   restart();
 }
 
-svg.on('mousedown', mousedown)
+function resolveDns(url) {
+  url = url.trim().replace("www.", "");
+  servers = url.split(".");
+  for (var i in servers) {
+    makeNewDns(servers[i]);
+  }
+  restart();
+}
+
+function resolveDnsForFacebook() {
+  resolveDns('www.facebook.com');
+}
+
+svg
 	.on('mousemove', mousemove)
 	.on('mouseup', mouseup);

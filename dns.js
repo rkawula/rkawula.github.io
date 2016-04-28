@@ -19,7 +19,7 @@ var width  = 960,
       type: "root"
     }],
     lastNodeId = 2,
-    links = [];
+    links = [ { source: 0, target: 1, left: false, right: true}];
 
 var svg = d3.select('body')
   .append('svg')
@@ -282,15 +282,21 @@ function beginDrawingLink(d) {
 function resolveDns() {
   var url = document.getElementById('query').value
   url = url.trim().replace("www.", "");
+  makeNameServers(url);
+  animateQuery(url);
+}
+
+function makeNameServers(url) {
   servers = url.split(".");
-  for (var i in servers) {
-      makeNewDns(servers[i]);
+  var nameServer = "";
+  for (i = servers.length - 1; i > -1; i--) {
+    nameServer = servers[i] + "." + nameServer;
+      makeNewDns(nameServer);
   }
-  restart();
 }
 
 svg
 	.on('mousemove', mousemove)
 	.on('mouseup', mouseup);
-  
+
 restart();

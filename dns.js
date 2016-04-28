@@ -1,9 +1,25 @@
 var width  = 960,
     height = 500,
-    nodes,
-    lastNodeId,
-    links,
-    force;
+    nodes = [{
+      id: 0,
+      text: "Local subnet",
+      color: "#ce31c2",
+      type: "local"
+    },
+    {
+      id: 1,
+      text: "Local DNS cache",
+      color: "#3366ff",
+      type: "local"
+    },
+    {
+      id: 2,
+      text: ". nameserver",
+      color: "#ffd633",
+      type: "root"
+    }],
+    lastNodeId = 2,
+    links = [];
 
 var svg = d3.select('body')
   .append('svg')
@@ -13,21 +29,13 @@ var svg = d3.select('body')
   .attr('height', height);
 
 
-d3.json('dns.json', function(success) {
-  nodes = success;
-  lastNodeId = 14;
-  links = [];
-  force = d3.layout.force()
+var force = d3.layout.force()
     .nodes(nodes)
     .links(links)
     .size([width, height])
     .linkDistance(150)
     .charge(-500)
     .on('tick', tick);
-  restart();
-});
-
-
 
 // arrow markers, both end and beginning.
 svg.append('svg:defs').append('svg:marker')
@@ -148,6 +156,7 @@ function makeNewDns(name) {
   if (mousedown_node || mousedown_link) {
     return;
   }
+  // TODO: replace with hash.
   for (var i in nodes) {
     if (nodes[i].text === name) {
       return;
@@ -157,8 +166,8 @@ function makeNewDns(name) {
   var node = {
       id: ++lastNodeId
     };
-  node.x = width / 2;
-  node.y = height / 2;
+  node.x = Math.floor(Math.random() * width);
+  node.y = Math.floor(Math.random() * height);
   node.text = name;
   node.type = "authoritative";
   node.color = "green"
@@ -270,19 +279,18 @@ function beginDrawingLink(d) {
   restart();
 }
 
-function resolveDns(url) {
+function resolveDns() {
+  var url = document.getElementById('query').value
   url = url.trim().replace("www.", "");
   servers = url.split(".");
   for (var i in servers) {
-    makeNewDns(servers[i]);
+      makeNewDns(servers[i]);
   }
   restart();
-}
-
-function resolveDnsForFacebook() {
-  resolveDns('www.facebook.com');
 }
 
 svg
 	.on('mousemove', mousemove)
 	.on('mouseup', mouseup);
+  
+restart();

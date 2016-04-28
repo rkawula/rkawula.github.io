@@ -2,13 +2,13 @@ var width  = 960,
     height = 500,
     nodes = [{
       id: 0,
-      text: "Local subnet",
+      text: "Subnet",
       color: "#ce31c2",
       type: "local"
     },
     {
       id: 1,
-      text: "Local DNS cache",
+      text: "DNS resolver",
       color: "#3366ff",
       type: "local"
     },
@@ -142,7 +142,7 @@ function restart() {
 		.attr('y', -25)
 		.attr('class', 'id')
     // Applies text to element.
-		.text(function(d) { return d.text; });
+		.text(function(d) { return d.text + " (" + d.type + ")"; });
 
   // Remove old nodes.
 	circle.exit().remove();
@@ -153,9 +153,6 @@ function restart() {
 function makeNewDns(name) {
   svg.classed('active', true);
 
-  if (mousedown_node || mousedown_link) {
-    return;
-  }
   // TODO: replace with hash.
   for (var i in nodes) {
     if (nodes[i].text === name) {
@@ -165,11 +162,20 @@ function makeNewDns(name) {
   // New node here.
   var node = {
       id: ++lastNodeId
-    };
+  };
   node.x = Math.floor(Math.random() * width);
   node.y = Math.floor(Math.random() * height);
   node.text = name;
-  node.type = "authoritative";
+  // Matches if there is only 1 period,
+  // exactly, with text before it,
+  // and the period is at the end.
+  if (node.text.match(/^[^\.]+\.$/)) {
+    node.type = "top level domain";
+  } else {
+    // There is more than one period,
+    // so this is not a top-level domain.
+    node.type = "authoritative";
+  }
   node.color = "green"
   nodes.push(node);
 
@@ -263,6 +269,7 @@ function beginDrawingLink(d) {
 function resolveDns() {
   var url = document.getElementById('query').value
   url = url.trim().replace("www.", "");
+  url = "ns" + (Math.floor(Math.random() * 4) + 1).toString() + "." + url;
   makeNameServers(url);
   //animateQuery(url);
 }
@@ -272,8 +279,37 @@ function makeNameServers(url) {
   var nameServer = "";
   for (i = servers.length - 1; i > -1; i--) {
     nameServer = servers[i] + "." + nameServer;
+    if (i === 1) {
+      makeTargetServer(nameServer);
+    } else {
       makeNewDns(nameServer);
+    }
   }
+}
+
+function makeTargetServer(name) {
+  svg.classed('active', true);
+
+  // TODO: replace with hash.
+  for (var i in nodes) {
+    if (nodes[i].text === name) {
+      return;
+    }
+  }
+  // New node here.
+  var node = {
+      id: ++lastNodeId
+  };
+  node.x = Math.floor(Math.random() * width);
+  node.y = Math.floor(Math.random() * height);
+  node.text = name;
+
+  node.type = "destination";
+
+  node.color = "black"
+  nodes.push(node);
+
+  restart();
 }
 
 function connectNodes(sourceId, targetId) {

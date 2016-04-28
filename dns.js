@@ -151,7 +151,7 @@ function restart() {
 	force.start();
 }
 
-function makeNewDns(name) {
+function makeNewDns(name, timeout) {
   svg.classed('active', true);
 
   // TODO: replace with hash.
@@ -179,7 +179,9 @@ function makeNewDns(name) {
   }
   node.color = "green"
   nodes.push(node);
-
+  setTimeout(function() {
+    connectNodes(1, node.id);
+  }, 750 * (timeout + 1));
   restart();
 }
 
@@ -277,14 +279,15 @@ function resolveDns() {
 function makeNameServers(url) {
   servers = url.split(".");
   var nameServer = "";
+  // TODO: Currently servers are made backward
+  // (should start with highest authority).
   for (i = servers.length - 1; i > -1; i--) {
     nameServer = servers[i] + "." + nameServer;
     if (i === 1) {
       makeTargetServer(nameServer);
     } else {
-      makeNewDns(nameServer);
+      makeNewDns(nameServer, i);
     }
-    connectNodes(1, lastNodeId);
   }
 }
 

@@ -24,7 +24,7 @@ var width  = 960,
     }],
     lastNodeId = 2,
     links = [ { source: 0, target: 1, left: false, right: true}],
-    cache = [];
+    resolver = nodes[1];
 
 var svg = d3.select('body')
   .append('svg')
@@ -183,6 +183,7 @@ function makeNewDns(name, timeout) {
   }
   node.color = "green"
   nodes.push(node);
+  addToCache(node);
   setTimeout(function() {
     connectNodes(1, node.id);
   }, 750 * (timeout + 1));
@@ -291,8 +292,12 @@ function makeNameServers(url) {
     formattedServerName = servers[i] + "." + formattedServerName;
     nameServers.push(formattedServerName);
   }
-  // Loop backward to make animation display correctly.
+  // Loop backward to begin query at highest level.
   for (i = nameServers.length - 1; i > -1; i--) {
+    // Check cache before creating new node.
+    if (cached(nameServers[i]) != -1) {
+      continue;
+    }
     if (i === 2) {
       makeTargetServer(nameServers[i]);
     } else {
@@ -322,7 +327,7 @@ function makeTargetServer(name) {
 
   node.color = "black"
   nodes.push(node);
-
+  addToCache(node);
   restart();
 }
 
@@ -351,6 +356,23 @@ function connectNodes(sourceId, targetId) {
 function connectNodesTest() {
   var ids = document.getElementById('newLink').value.split(", ");
   connectNodes(ids[0], ids[1]);
+}
+
+// Returns the id of the cached node,
+// or -1 for not yet cached.
+function cached(name) {
+  var cachedNode = resolver["cache"].filter(function(c) {
+    return name == c.name;
+  })[0];
+  if (cachedNode) {
+    return cachedNode.id;
+  }
+  return -1;
+}
+
+function addToCache(node) {
+  resolver["cache"].push({ name: node.text, id: node.id });
+  console.log(resolver["cache"]);
 }
 
 svg

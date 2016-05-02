@@ -24,7 +24,8 @@ var width  = 960,
     }],
     lastNodeId = 2,
     links = [ { source: 0, target: 1, left: false, right: true}],
-    resolver = nodes[1];
+    resolver = nodes[1],
+    rootDNS = nodes[2];
 
 var svg = d3.select('body')
   .append('svg')
@@ -72,17 +73,6 @@ var drag_line = svg.append('svg:path')
 var path = svg.append('svg:g').selectAll('path'),
 	circle = svg.append('svg:g').selectAll('g');
 
-var selected_node = null,
-	mousedown_link = null,
-	mousedown_node = null,
-	mouseup_node = null;
-
-function resetMouseVars() {
-	mousedown_node = null;
-	mouseup_node = null;
-	mousedown_link = null;
-}
-
 function tick() {
 	path.attr('d', function(d) {
 		var deltaX = d.target.x - d.source.x,
@@ -122,6 +112,9 @@ function restart() {
 
 	var g = circle.enter().append('svg:g');
 
+  var drag = force.drag()
+    .on("dragstart", function(d) { d3.select(this).classed("fixed", d.fixed = true); });
+
 	g.append('svg:circle')
 		.attr('class', 'node')
     // Nameserver size determined by text.
@@ -133,14 +126,8 @@ function restart() {
     })
 		.style('fill', function(d) { return d.color; })
 		.style('stroke', 'black')
-    // Mouse interactions for individual nodes defined here.
-    // Start drawing an arrow when clicked.
-		.on('mousedown', function(d) {
-      beginDrawingLink(d);
-    })
-		.on('mouseup', function(d) {
-			finishDrawingLink(d);
-		});
+    .call(drag)
+    .on("dblclick", function(d) { d3.select(this).classed("fixed", d.fixed = false); });
 
 	g.append('svg:text')
 		.attr('x', -20)
@@ -185,93 +172,8 @@ function makeNewDns(name, timeout) {
   nodes.push(node);
   addToCache(node);
   setTimeout(function() {
-    connectNodes(1, node.id);
+    connectNodes(resolver.id, node.id);
   }, 750 * (timeout + 1));
-  restart();
-}
-
-
-function mousemove() {
-	if (!mousedown_node) {
-		return;
-	}
-
-	drag_line.attr('d', 'M' + mousedown_node.x + ',' + mousedown_node.y
-		+ 'L' + d3.mouse(this)[0] + ',' + d3.mouse(this)[1]);
-	restart();
-}
-
-function mouseup() {
-	if (mousedown_node) {
-		drag_line
-      .classed('hidden', true)
-		  .style('marker-end', '');
-	}
-
-	svg.classed('active', false);
-
-	resetMouseVars();
-}
-
-function finishDrawingLink(d) {
-  if (!mousedown_node) {
-    return;
-  }
-
-  drag_line.classed('hidden', true)
-    .style('marker-end', '');
-
-  mouseup_node = d;
-  if (mouseup_node === mousedown_node) {
-    resetMouseVars();
-    return;
-  }
-
-  // Add arrows since you dragged to a new node.
-  var source, target, direction;
-
-  source = mousedown_node;
-  target = mouseup_node;
-  direction = 'right';
-
-  var link;
-
-  link = links.filter(function(l) {
-    return (l.source === source && l.target === target);
-  })[0];
-
-  if (link) {
-    link[direction] = true;
-  } else {
-    link = {
-      source: source,
-      target: target,
-      left: false,
-      right: false
-    };
-    link[direction] = true;
-    links.push(link);
-  }
-
-  selected_node = null;
-  restart();
-}
-
-function beginDrawingLink(d) {
-  // Select current node.
-  mousedown_node = d;
-  // Deselect if was already selected.
-  if (mousedown_node === selected_node) {
-    selected_node = null;
-  } else {
-    selected_node = mousedown_node;
-  }
-  drag_line.style('marker-end', 'url(#end-arrow)')
-  .classed('hidden', false)
-  .attr('d', 'M' + mousedown_node.x + ',' + mousedown_node.y
-    + 'L' + mousedown_node.x + ',' + mousedown_node.y);
-
-  restart();
 }
 
 function resolveDns() {
@@ -295,13 +197,22 @@ function makeNameServers(url) {
   // Loop backward to begin query at highest level.
   for (i = nameServers.length - 1; i > -1; i--) {
     // Check cache before creating new node.
-    if (cached(nameServers[i]) != -1) {
-      continue;
-    }
-    if (i === 2) {
-      makeTargetServer(nameServers[i]);
+    if (cached(nameServers[i]) == -1) {
+      // If node was not cached, you have to ask the previous
+      // DNS in order to get its location.
+      // This may require going to root.
+      if (i + 1 === nameServers.length) {
+        setTimeout(function() {
+          connectNodes(resolver.id, rootDNS.id);
+        }, 400);
+      }
+      if (i === nameServers.length - 2) {
+        makeTargetServer(nameServers[i]);
+      } else {
+        makeNewDns(nameServers[i], i);
+      }
     } else {
-      makeNewDns(nameServers[i], i);
+
     }
   }
 }
@@ -310,11 +221,11 @@ function makeTargetServer(name) {
   svg.classed('active', true);
 
   // TODO: replace with hash.
-  for (var i in nodes) {
-    if (nodes[i].text === name) {
-      return;
-    }
-  }
+  // for (var i in nodes) {
+  //   if (nodes[i].text === name) {
+  //     return;
+  //   }
+  // }
   // New node here.
   var node = {
       id: ++lastNodeId
@@ -328,7 +239,6 @@ function makeTargetServer(name) {
   node.color = "black"
   nodes.push(node);
   addToCache(node);
-  restart();
 }
 
 function connectNodes(sourceId, targetId) {
@@ -353,11 +263,6 @@ function connectNodes(sourceId, targetId) {
   restart();
 }
 
-function connectNodesTest() {
-  var ids = document.getElementById('newLink').value.split(", ");
-  connectNodes(ids[0], ids[1]);
-}
-
 // Returns the id of the cached node,
 // or -1 for not yet cached.
 function cached(name) {
@@ -372,11 +277,6 @@ function cached(name) {
 
 function addToCache(node) {
   resolver["cache"].push({ name: node.text, id: node.id });
-  console.log(resolver["cache"]);
 }
-
-svg
-	.on('mousemove', mousemove)
-	.on('mouseup', mouseup);
 
 restart();

@@ -10,7 +10,8 @@ var width  = 960,
       id: 1,
       text: "DNS resolver",
       color: "#3366ff",
-      type: "local"
+      type: "local",
+      cache: [2]
     },
     {
       id: 2,
@@ -278,15 +279,19 @@ function resolveDns() {
 
 function makeNameServers(url) {
   servers = url.split(".");
-  var nameServer = "";
+  var nameServers = [];
+  var formattedServerName = "";
   // TODO: Currently servers are made backward
   // (should start with highest authority).
   for (i = servers.length - 1; i > -1; i--) {
-    nameServer = servers[i] + "." + nameServer;
+    formattedServerName = servers[i] + "." + formattedServerName;
+    nameServers.push(formattedServerName);
+  }
+  for (i = nameServers.length - 1; i > -1; i--) {
     if (i === 1) {
-      makeTargetServer(nameServer);
+      makeTargetServer(nameServers[i]);
     } else {
-      makeNewDns(nameServer, i);
+      makeNewDns(nameServers[i], i);
     }
   }
 }

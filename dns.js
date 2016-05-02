@@ -279,7 +279,8 @@ function resolveDns() {
 
 function makeNameServers(url) {
   servers = url.split(".");
-  var nameServers = [];
+  // Root server is the top-most server for any query.
+  var nameServers = ["."];
   var formattedServerName = "";
   // TODO: Currently servers are made backward
   // (should start with highest authority).
@@ -287,6 +288,7 @@ function makeNameServers(url) {
     formattedServerName = servers[i] + "." + formattedServerName;
     nameServers.push(formattedServerName);
   }
+  // Loop backward to make animation display correctly.
   for (i = nameServers.length - 1; i > -1; i--) {
     if (i === 1) {
       makeTargetServer(nameServers[i]);

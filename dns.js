@@ -70,8 +70,18 @@ var drag_line = svg.append('svg:path')
 	.attr('class', 'link dragline hidden')
 	.attr('d', 'M0,0L0,0');
 
+
+var drag = force.drag()
+  .on("dragstart", dragstart);
+
+function dragstart(d) {
+  d3.event.sourceEvent.stopPropagation();
+  d3.select(this).classed("fixed", d.fixed = true);
+}
+
 var path = svg.append('svg:g').selectAll('path'),
-	circle = svg.append('svg:g').selectAll('g');
+	circle = svg.append('svg:g').selectAll('g')
+            .call(drag);
 
 function tick() {
 	path.attr('d', function(d) {
@@ -110,10 +120,10 @@ function restart() {
 
 	circle = circle.data(nodes, function(d) { return d.id; });
 
-	var g = circle.enter().append('svg:g');
-
-  var drag = force.drag()
-    .on("dragstart", function(d) { d3.select(this).classed("fixed", d.fixed = true); });
+	var g = circle.enter().append('svg:g')
+          // Drag must be handled by entire g element,
+          // not the circles below.
+          .call(drag);
 
 	g.append('svg:circle')
 		.attr('class', 'node')
@@ -126,8 +136,9 @@ function restart() {
     })
 		.style('fill', function(d) { return d.color; })
 		.style('stroke', 'black')
-    .call(drag)
-    .on("dblclick", function(d) { d3.select(this).classed("fixed", d.fixed = false); });
+    .on("dblclick", function(d) {
+      d3.select(this).classed("fixed", d.fixed = false);
+    });
 
 	g.append('svg:text')
 		.attr('x', -20)

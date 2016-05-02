@@ -11,11 +11,14 @@ var width  = 960,
       text: "DNS resolver",
       color: "#3366ff",
       type: "local",
-      cache: [2]
+      cache: [{
+        name: ".",
+        id: 2
+      }]
     },
     {
       id: 2,
-      text: ". nameserver",
+      text: ".",
       color: "#ffd633",
       type: "root"
     }],
@@ -290,7 +293,7 @@ function makeNameServers(url) {
   }
   // Loop backward to make animation display correctly.
   for (i = nameServers.length - 1; i > -1; i--) {
-    if (i === 1) {
+    if (i === 2) {
       makeTargetServer(nameServers[i]);
     } else {
       makeNewDns(nameServers[i], i);

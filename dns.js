@@ -23,7 +23,7 @@ var width  = 960,
       type: "root"
     }],
     lastNodeId = 2,
-    links = [ { source: 0, target: 1, left: false, right: true}],
+    links = [],
     resolver = nodes[1],
     rootDNS = nodes[2];
 
@@ -116,6 +116,7 @@ function restart() {
 		.style('marker-start', function(d) { return d.left ? 'url(#start-arrow)' : ''; })
 		.style('marker-end', function(d) { return d.right ? 'url(#end-arrow)' : ''; });
 
+  // remove old links.
 	path.exit().remove();
 
 	circle = circle.data(nodes, function(d) { return d.id; });
@@ -155,13 +156,6 @@ function restart() {
 
 function makeNewDns(name, timeout) {
   svg.classed('active', true);
-
-  // TODO: replace with hash.
-  for (var i in nodes) {
-    if (nodes[i].text === name) {
-      return;
-    }
-  }
   // New node here.
   var node = {
       id: ++lastNodeId
@@ -179,15 +173,18 @@ function makeNewDns(name, timeout) {
     // so this is not a top-level domain.
     node.type = "authoritative";
   }
-  node.color = "green"
-  nodes.push(node);
-  addToCache(node);
+  node.color = "green";
   setTimeout(function() {
+    nodes.push(node);
+    addToCache(node);
     connectNodes(resolver.id, node.id);
-  }, 750 * (timeout + 1));
+  }, 900 * (timeout + 1));
 }
 
 function resolveDns() {
+  // Fade out the previous query path.
+  fadeOut();
+  links = [];
   var url = document.getElementById('query').value
   url = url.trim().replace("www.", "");
   url = "ns" + (Math.floor(Math.random() * 4) + 1).toString() + "." + url;
@@ -199,44 +196,49 @@ function makeNameServers(url) {
   // Root server is the top-most server for any query.
   var nameServers = ["."];
   var formattedServerName = "";
-  // TODO: Currently servers are made backward
-  // (should start with highest authority).
+
   for (i = servers.length - 1; i > -1; i--) {
     formattedServerName = servers[i] + "." + formattedServerName;
     nameServers.push(formattedServerName);
   }
+  // Begin animation here.
+  setTimeout(function() {
+    connectNodes(0, 1);
+  }, 400);
+  drawQuery(nameServers);
+}
+
+function drawQuery(servers) {
   // Loop backward to begin query at highest level.
-  for (i = nameServers.length - 1; i > -1; i--) {
+  for (i = servers.length - 1; i > -1; i--) {
     // Check cache before creating new node.
-    if (cached(nameServers[i]) == -1) {
-      // If node was not cached, you have to ask the previous
-      // DNS in order to get its location.
-      // This may require going to root.
-      if (i + 1 === nameServers.length) {
-        setTimeout(function() {
-          connectNodes(resolver.id, rootDNS.id);
-        }, 400);
-      }
-      if (i === nameServers.length - 2) {
-        makeTargetServer(nameServers[i]);
+    var serverId = cached(servers[i]);
+
+    if (serverId === -1) {
+      if (i === servers.length - 2) {
+        makeTargetServer(servers[i]);
       } else {
-        makeNewDns(nameServers[i], i);
+        makeNewDns(servers[i], i);
       }
     } else {
-
+      // Node was already created and cached.
+      setTimeout(function() {
+        connectNodes(resolver.id, serverId);
+      }, 1000);
     }
   }
+}
+
+function fadeOut() {
+  path.style("opacity", 1)
+    .transition().duration(400).style("opacity", 0);
+  links = [];
+  restart();
 }
 
 function makeTargetServer(name) {
   svg.classed('active', true);
 
-  // TODO: replace with hash.
-  // for (var i in nodes) {
-  //   if (nodes[i].text === name) {
-  //     return;
-  //   }
-  // }
   // New node here.
   var node = {
       id: ++lastNodeId
@@ -263,14 +265,12 @@ function connectNodes(sourceId, targetId) {
   var target = nodes.filter(function(n) {
     return n.id == targetId;
   })[0];
-
-  var link = {
+  links.push({
       source: source,
       target: target,
       left: false,
       right: true
-    };
-  links.push(link);
+  });
   restart();
 }
 

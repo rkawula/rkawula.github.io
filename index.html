@@ -10,21 +10,20 @@
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="dns.js"></script>
     <link rel="stylesheet" type="text/css" href="dns.css">
-    <h1>Stubbed testing functions</h1>
-    Eventually, typing a URL to query would display the entire animation where links are automatically drawn between the nameservers to display the way the IP address would be resolved.
+    <h1>Query for the IP Address</h1>
+    <p>Typing a URL displays an animation where links are drawn between the nameservers, representing the way the DNS turns the URL into an IP address.
     <br>
-    Caching will be added so that when querying a duplicate URL, the animation stops at the Local cache.
+    <p>If the URL has already been queried by the subnet, then the data is cached and the query does not need to run.
+    <br>
+    <p>If the URL's top level domain has already been queried by the subnet, then the top level domain is cached and the query takes a short-cut.
+    <br>
+    <p>Caching will be added so that when querying a duplicate URL, the animation stops at the Resolver cache.
     <br>
     Please enter query here:
     <br>
     <input type="text" id="query" class="query" placeholder="www.facebook.com">
     <button onclick="resolveDns()">Create nameservers</button>
     <br>
-    <br>
-    Test connecting two nodes by id here, separated by a comma and space (ie: "1, 2"):
-    <br>
-    <input type="text" id="newLink">
-    <button onclick="connectNodesTest()">Connect nameservers</button>
   </body>
 
 </html>

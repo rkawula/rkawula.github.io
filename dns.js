@@ -203,7 +203,7 @@ function makeNameServers(url) {
   }
   // Begin animation here.
   setTimeout(function() {
-    connectNodes(0, 1);
+    connectNodes(0, resolver.id);
   }, 400);
   drawQuery(nameServers);
 }
@@ -213,7 +213,6 @@ function drawQuery(servers) {
   for (i = servers.length - 1; i > -1; i--) {
     // Check cache before creating new node.
     var serverId = cached(servers[i]);
-
     if (serverId === -1) {
       if (i === servers.length - 2) {
         makeTargetServer(servers[i]);
@@ -232,7 +231,7 @@ function drawQuery(servers) {
 function fadeOut() {
   path.style("opacity", 1)
     .transition().duration(400).style("opacity", 0);
-  links = [];
+  links.length = 0;
   restart();
 }
 
